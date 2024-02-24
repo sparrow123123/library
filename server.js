@@ -1,5 +1,5 @@
 const express = require('express');
-const mysql = require('mysql')
+const mysql = require('mysql2')
 const cors = require('cors')
 
 const app = express()
@@ -7,16 +7,28 @@ app.use(cors())
 app.use(express.json());
 
 
-const db = mysql.createConnection({
-    host: 'localhost',
-    user: 'root',
-    password: '9943060731',  
-    database: 'library'
+// const db = mysql.createConnection({
+//     host: 'localhost',
+//     user: 'root',
+//     password: '9943060731',  
+//     database: 'library'
 
-})
+// })
+
+const db = mysql.createConnection(`mysql://avnadmin:AVNS_sdwvMqm_eFn5ewoJXi3@mysql-2b1fb47c-dhanushlib.a.aivencloud.com:21992/library`)
 
 db.connect(()=>{
     console.log("database connectd")
+})
+
+app.get('/getbooks',(req,res)=>{
+    const q='SELECT * FROM libdata';
+
+    db.query(q,[],(err,data)=>{
+        if(err)return res.json(err);
+
+        return res.json(data)
+    })
 })
 
 app.get('/fetch',(req,res)=>{
@@ -55,6 +67,8 @@ app.get('/log/:user/:pass',(req,res)=>{
           
         })
 })
+
+
 
 app.get('/searchid/:id',(req,res)=>{
     let id = req.params.id;
@@ -210,6 +224,49 @@ app.get('/adminfetch',(req,res)=>{
         res.send(result)
     })
 })
+
+app.get('/adminrem/:rmid',(req,res)=>{
+    let rmid = req.params.rmid
+    let sql = "DELETE FROM libdata WHERE bookid=?"
+    db.query(sql,[rmid],(err,result)=>{
+        console.log("removed")
+        res.send(result)
+    })
+})
+
+
+
+
+
+app.get('/adminremove/:id',(req,res)=>{
+    let id = req.params.id;
+    let sql = "UPDATE libdata set stats = 1  where bookid =?;"
+
+    let q = "delete from book  where booked=?"
+    db.query(q,[id],(err,r)=>{
+        if(!err){
+            console.log('removed')
+        }
+        else{
+            console.log("bd rm")
+        }
+    })
+    
+
+    db.query(sql,[id],(err,result)=>{
+       if(!err){
+        console.log("suc")
+       }
+       else{
+        console.error(err)
+       }
+    })
+})
+
+
+
+
+
 
 // app.get('/log/:user/:pass',(req,res)=>{
 //     let user = req.params.user;
